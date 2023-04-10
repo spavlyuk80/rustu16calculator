@@ -9,23 +9,25 @@ pub(crate) struct Calculator {
 }
 
 impl Calculator {
+    // u16 can overflow and underflow. instead of raising en error
+    // it makes sense to convert u16 to the types we can properly handle
+    // and return number. I could do checked_* operations, but why?
     pub(crate) fn get_result(&self) -> Result<String, ServerError> {
         let result: String = match self.sign.as_str() {
+            // can overflow, safe to do with u32
             "+" => {
-                let result = self.a + self.b;
-                result.to_string()
+                let u32sum = self.a as u32 + self.b as u32;
+                let output = u32sum.to_string();
+                output
             },
+            // can underflow
             "-" => {
-                if self.b > self.a {
-                    return Err(ServerError {
-                        message: "Integer underflow for type u16".to_string(),
-                    });
-                }
-                let result = self.a - self.b;
+                let result = self.a as i32 - self.b as i32;
                 result.to_string()
             }
+            // can overflow, u64 is safe
             "*" => {
-                let result = self.a * self.b;
+                let result = self.a as u64 * self.b as u64;
                 result.to_string()
             },
             "/" => {
@@ -34,12 +36,8 @@ impl Calculator {
                         message: "Division by zero".to_string(),
                     });
                 }
-
                 let result = self.a as f32/ self.b as f32;
-                let integer_part = result.trunc() as u16;
-                let decimal_part = (result.fract() * 100.0).round() as u16;
-                format!("{}.{:02}", integer_part, decimal_part)
-
+                result.to_string()
             }
             _ => {
                 return Err(ServerError {

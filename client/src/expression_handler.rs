@@ -1,9 +1,10 @@
 use crate::api::make_request;
 use crate::client_error::ClientError;
-use crate::structures::Expression;
+use crate::expression::Expression;
 use regex::Regex;
+use crate::cli::ServerConfig;
 
-pub async fn evaluate_expression(input: &str) -> Result<String, ClientError> {
+pub async fn evaluate_expression(input: &str, config: &ServerConfig) -> Result<String, ClientError> {
     let re = Regex::new(r"^\s*(\d+)\s*([+\-*/])\s*(\d+)\s*$").unwrap();
 
     if !input
@@ -30,7 +31,7 @@ pub async fn evaluate_expression(input: &str) -> Result<String, ClientError> {
         Err(e) => return Err(e),
     };
 
-    let response = match make_request(&expression).await {
+    let response = match make_request(&expression, &config).await {
         Ok(value) => value,
         Err(e) => return Err(e),
     };

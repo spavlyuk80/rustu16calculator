@@ -1,10 +1,13 @@
 use crate::client_error::ClientError;
-use crate::structures::Expression;
+use crate::expression::Expression;
 use url::form_urlencoded;
+use crate::cli::ServerConfig;
 
-pub async fn make_request(expression: &Expression) -> Result<String, ClientError> {
+pub async fn make_request(expression: &Expression, config: &ServerConfig) -> Result<String, ClientError> {
+
+    let base_url = format!("http://127.0.0.1:{}?", config.port);
     // encode url safe
-    let url = form_urlencoded::Serializer::new("http://127.0.0.1:8080?".to_string())
+    let url = form_urlencoded::Serializer::new(base_url.to_string())
         .append_pair("a", expression.a.to_string().as_str())
         .append_pair("b", expression.b.to_string().as_str())
         .append_pair("sign", expression.sign.as_str())
